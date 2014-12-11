@@ -24,9 +24,10 @@
   
                          
 /*	 
-        CieloOscuro()
-        planicie(nomImagen,textura,escala)
-        cieloPlano(texturaCielo,texturas,inicio) 
+        darkSky()   
+        plain(tgaPath, newTexture, newScale)        
+        plainSky(skyTexture,textures, height)
+        --
         turb(Color1,Color2)	
 	texto(string,fuente,extrusion,espacio)	
 	edificio(columnas,altura, ancho,espacio, grosorPiso,texColumna,texVentana,X,Y,Z)
@@ -73,7 +74,7 @@
 */ 
 
 
-#macro CieloOscuro()
+#macro darkSky()
 sky_sphere {
   pigment {
     gradient y
@@ -116,31 +117,31 @@ sky_sphere {
 }
 #end
 
-#macro planicie(nomImagen,textura,escala)
+#macro plain(tgaPath, newTexture, newScale)
         height_field {
-                tga nomImagen
+                tga tgaPath
                 smooth
-                translate <-.5, -.5, -.5>//centrar en el origen        
-                texture{textura}
-                scale escala 
+                translate <-.5, -.5, -.5>//center at origin      
+                texture{newTexture}
+                scale newScale 
         }
 #end    
 
-#macro cieloPlano(texturaCielo,texturas,altura)     
-        #local tam = dimension_size(texturas,1);
+#macro plainSky(skyTexture,textures, height)     
+        #local tam = dimension_size(textures,1);
         plane {
-          y,
-          20000
-          hollow on
-          texture{texturaCielo}
-          finish { diffuse 0 ambient 1 } 
+            y,
+            20000
+            hollow on
+            texture{skyTexture}
+            finish { diffuse 0 ambient 1 } 
         } 
         #while(tam > 0) 
-                #local tex = texturas[tam - 1]
-                inc(altura,10)
+                #local tex = textures[tam - 1]
+                inc(height,10)
                 plane{   
                   y, 
-                  altura 
+                  height 
                   hollow on                 
                   texture{tex scale 10}               
                 }

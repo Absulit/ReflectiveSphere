@@ -27,10 +27,12 @@
         darkSky()   
         plain(tgaPath, newTexture, newScale)        
         plainSky(skyTexture,textures, height)
-        --
-        turb(Color1,Color2)	
-	texto(string,fuente,extrusion,espacio)	
-	edificio(columnas,altura, ancho,espacio, grosorPiso,texColumna,texVentana,X,Y,Z)
+        turb(color1,color2)	           
+	    textfield(string,fontName,extrusion,space) 
+	    
+	    	
+	    edificio(columnas,altura, ancho,espacio, grosorPiso,texColumna,texVentana,X,Y,Z)
+	    --
 
         explosion(Color_Map,X,Y,Z,rx,ry,rz,turbulencia) 
 
@@ -149,37 +151,37 @@ sky_sphere {
         #end
 #end
 
-#macro turb(Color1, Color2)  
-	pigment {
+#macro turb(color1, color2)  
+	//pigment {
 	        bozo
 	        turbulence 1
 	        lambda 2
 	        color_map {
-	          [0.00, 0.33 Color1 color rgb <1, 0, 0>]
+	          [0.00, 0.33 color1 color rgb <1, 0, 0>]
 	          //[0.33, 0.66 color rgbf <1, 1, 1, 1> color rgbf <1, 1, 1, 1>]
-	          [0.66, 1.00 Color2 color rgb <1, 0, 0>]
+	          [0.66, 1.00 color2 color rgb <1, 0, 0>]
 	        }
 	      
 	    
-	}
+	//}
 #end
 
-#macro texto(string,fuente,extrusion,espacio) 
+#macro textfield(string,fontName,extrusion,space) 
 	text {
 	  ttf
-	  concat(fuente,".ttf"),
+	  concat(fontName,".ttf"),
 	  string,
 	  extrusion, 
-	  espacio 
+	  space 
 	}           
 #end 
 
-#macro edificio(columnas,altura, ancho,espacio, grosorPiso,texColumna,texVentana,X,Y,Z)
+#macro building(columnas,altura, ancho,espacio, grosorPiso,texColumna,texVentana, position)
 	//crear columna
 	#local columna =
 	box {
-	  <X,Y,Z>
-	  <X+2,Y+2,Z+2>	  
+	  position
+	  <position.x+2,position.y+2,position.z+2>	  
 	  scale <ancho,altura,ancho> 
 	  texture{texColumna}
 	}	
@@ -191,7 +193,7 @@ sky_sphere {
 			#if((f = 1)|(f = columnas-1) | (c = 1)|(c = columnas-1))
 				object{
 					columna
-					translate<(f * espacio), Y, (c*espacio)>
+					translate<(f * espacio), position.y, (c*espacio)>
 				} 
 			#end
 			inc(f,1)
@@ -211,15 +213,15 @@ sky_sphere {
 	#while(f < altura)
 		object{
 			piso
-			mover( X, f + Y, Z)
+			mover( position.x, f + position.y, position.z)
 		}
 		inc(f,1)
 	#end
 	
 	//ventana
 	box {
-	  <espacio + X, Y, espacio + Z>
-	  < esquina + X,  altura + Y, esquina + Z>
+	  <espacio + position.x, position.y, espacio + position.z>
+	  < esquina + position.x,  altura + position.y, esquina + position.z>
 	  
 	  texture{texVentana}
 	}  
@@ -547,7 +549,7 @@ sphere {
 #macro reflejo(luz,sombra)   
    	finish{reflection{ luz, sombra  fresnel .5} conserve_energy} 
    	//finish{reflection{ .03, 1  fresnel .5} conserve_energy}
-   	interior{ior 1.5}   
+   	//interior{ior 1.5}   
    	#debug "Reflejo Terminado\n"
 #end
     

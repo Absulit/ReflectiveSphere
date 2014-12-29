@@ -26,10 +26,15 @@ If you are lazy add the following include which adds all the inner includes
 Also if you want to be specific you can add one of the following
 
  #include "incs.inc"         // inc related files from PovRay that you might need
+
  #include "macros.inc"       // bunch of macros
+
 //#include "rays.inc"       // macros for raytracing 
+
  #include "constantes.inc"   // constants such as light source
+
  #include "animacion.inc"    // animation related 
+
 
 ## Contributing
 

@@ -29,21 +29,19 @@
         plainSky(skyTexture,textures, height)
         turb(color1,color2)	           
 	    textfield(string,fontName,extrusion,space) 
-	    
-	    	
-	    edificio(columnas,altura, ancho,espacio, grosorPiso,texColumna,texVentana,X,Y,Z)
+	    building(numColumns, columnHeight, columnWidth, space, floorWidth, columnTexture, windowTexture, position)	    
+	    explosion(colorMap, position, rotation, turbulenceVal, scaleVal)   
+	    smoke() 
+	    glow(color) 
+	    cubeObj(X,Y,Z) 
+	    photonGlobal(filename, loadBool)  
+	    photonLoadGlobal(filename)  
+	    photonContent() 
+	    photonLightSource()
+	    dFx(obj,mx,my,mz,rx,ry,rz)
 	    --
 
-        explosion(Color_Map,X,Y,Z,rx,ry,rz,turbulencia) 
-
-        humo()      
-
-        Glow(Color)  
-        cubo(X,Y,Z)    
-        globalFoton()
-        objFoton() 
-        luzFoton()
-        dFx(obj,mx,my,mz,rx,ry,rz)  
+          
         iluminar(obj,X,Y,Z,Color)
 	plano(altura, reflejoA, reflejoB, textura)
 	colorDeFondo(R,G,B)
@@ -176,24 +174,25 @@ sky_sphere {
 	}           
 #end 
 
-#macro building(columnas,altura, ancho,espacio, grosorPiso,texColumna,texVentana, position)
-	//crear columna
-	#local columna =
-	box {
-	  position
-	  <position.x+2,position.y+2,position.z+2>	  
-	  scale <ancho,altura,ancho> 
-	  texture{texColumna}
-	}	
+#macro building(numColumns, columnHeight, columnWidth, space, floorWidth, columnTexture, windowTexture, position)
+	//create column
+	#local column =
+    	box {
+    	  position
+    	  <position.x+2, position.y+2, position.z+2>	  
+    	  scale <columnWidth,columnHeight,columnWidth> 
+    	  texture{columnTexture}
+    	}	
 	#local c = 1;
-	#local f = 1;
-	//crear un cuadro de columnas
-	#while(c < columnas)
-		#while(f < columnas) 
-			#if((f = 1)|(f = columnas-1) | (c = 1)|(c = columnas-1))
+	#local f = 1;   
+	
+	//create a column square
+	#while(c < numColumns)
+		#while(f < numColumns) 
+			#if((f = 1)|(f = numColumns-1) | (c = 1)|(c = numColumns-1))
 				object{
-					columna
-					translate<(f * espacio), position.y, (c*espacio)>
+					column
+					translate<(f * space), position.y, (c*space)>
 				} 
 			#end
 			inc(f,1)
@@ -202,28 +201,30 @@ sky_sphere {
 		inc(c,1)
 	#end
 	 
-	#local esquina = (columnas * espacio) - 3; 
-	#local piso = 
-	//pisos
-	box {
-	  <espacio, 0, espacio>  
-	  < esquina,  grosorPiso, esquina>  
-	  texture{texColumna}
-	} 
-	#while(f < altura)
+	#local corner   = (numColumns * space) - 3; 
+	#local floorObj =    
+	
+    	//floors
+    	box {
+    	  <space, 0, space>  
+    	  < corner,  floorWidth, corner>  
+    	  texture{columnTexture}
+    	} 
+	
+	#while(f < columnHeight)
 		object{
-			piso
+			floorObj
 			mover( position.x, f + position.y, position.z)
 		}
 		inc(f,1)
 	#end
 	
-	//ventana
+	//windows
 	box {
-	  <espacio + position.x, position.y, espacio + position.z>
-	  < esquina + position.x,  altura + position.y, esquina + position.z>
+	  <space + position.x, position.y, space + position.z>
+	  < corner + position.x,  columnHeight + position.y, corner + position.z>
 	  
-	  texture{texVentana}
+	  texture{windowTexture}
 	}  
 
 
@@ -277,7 +278,7 @@ sky_sphere {
 
 
 
-#macro explosion(colorMap,X,Y,Z,rx,ry,rz,turbulencia,Escala)
+#macro explosion(colorMap, position, rotation, turbulenceVal, scaleVal)
 sphere { 
         0, 1
         pigment {color rgbt <1,1,1,1>}
@@ -287,7 +288,7 @@ sphere {
                         samples 20 
                         density { 
                                 spherical
-                                turbulence turbulencia
+                                turbulence turbulenceVal
                                 //frequency 2
                                 color_map{colorMap}                              
                         }
@@ -298,16 +299,16 @@ sphere {
         
         hollow on
         scale 1.5 
-        scale Escala 
-        mover(X,Y,Z) 
-        rotate<rx,ry,rz>  
+        scale scaleVal 
+        mover( position.x, position.y, position.z) 
+        rotate<rotation.x, rotation.y, rotation.z>  
         no_shadow
 }
 #end 
 
 
 
-#macro humo()
+#macro smoke()
         pigment{Clear}
         no_reflection
         hollow on 
@@ -353,7 +354,7 @@ sphere {
 
 
   
-#macro Glow(Color)
+#macro glow(rgbColor)
   media { 
     emission 1
     density { 
@@ -361,45 +362,48 @@ sphere {
       poly_wave 5
       density_map { 
         [0 rgb 0]
-        [1 rgb Color]
+        [1 rgb rgbColor]
       }
     }
     method 3
   }
 #end
 
-#macro cubo(X,Y,Z) 
+#macro cubeObj(X,Y,Z) 
         box {
           <0,0,0> <X,Y,Z>  
         }
 #end
 
-#macro globalFoton(nomArchivo,cargar)   
-        photons {
+#macro photonGlobal(filename, saveToFile)   
+        photons {   
+ 
 		    spacing 0.05
 		    autostop 0
 		    jitter 0
-		#if(cargar) 
-		        load_file nomArchivo
+		#if(saveToFile)  
+                count 10000
+                media 100 
+		        save_file filename
 		#else 
-		        save_file nomArchivo
+		        load_file filename
 		#end
                                             
         }  
         max_trace_level 5  
 #end 
 
-#macro globalFotonCargar(nomArchivo)
+#macro photonLoadGlobal(filename)
         photons {
                 spacing 0.1
                 //count 10000
                 //media 100
-                load_file nomArchivo                            
+                load_file filename                            
         }  
         max_trace_level 5  
 #end
 
-#macro objFoton()  
+#macro photonContent()  
 	pigment {White filter .9}
 	finish {
 		reflection {0.2 fresnel metallic}
@@ -409,14 +413,14 @@ sphere {
 		dispersion 1.05
 		dispersion_samples 20
 	}
-        photons {
-		target .5
-		refraction on
-		reflection on
-        }        
+    photons {
+        target .5
+        refraction on
+        reflection on
+    }        
 #end
 
-#macro luzFoton()
+#macro photonLightSource()
   photons {
     refraction on
     reflection on
@@ -433,11 +437,11 @@ sphere {
                         fade_power 3
                         ior 2.4
                 }
-                reflejo(.2) 
+                reflejo(.2, 1) 
                 caustico(2)  
                 rotate<rx,ry,rz> 
                 mover(mx,my,mz) 
-                objFoton()
+                photonContent()
         }
 #end
 

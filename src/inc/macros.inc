@@ -25,7 +25,7 @@
                          
 /*	 
         darkSky()   
-        plain(tgaPath, newTexture, newScale)        
+        heightField(tgaPath, newTexture, newScale)        
         plainSky(skyTexture,textures, height)
         turb(color1,color2)	           
 	    textfield(string,fontName,extrusion,space) 
@@ -38,13 +38,12 @@
 	    photonLoadGlobal(filename)  
 	    photonContent() 
 	    photonLightSource()
-	    dFx(obj,mx,my,mz,rx,ry,rz)
+	    dFx(obj,mx,my,mz,rx,ry,rz) 
+	    illuminate(obj, lightSourcePosition, lightSourceColor)   
+	    plain(plainHeight, reflectionA, reflectionB, plainTexture)  
+	    bgColor(value)
 	    --
 
-          
-        iluminar(obj,X,Y,Z,Color)
-	plano(altura, reflejoA, reflejoB, textura)
-	colorDeFondo(R,G,B)
 	bola(X,Y,Z,radio)
 	caja(X,Y,Z,XX,YY,ZZ,rx,ry,rz) 
 	luzVisible(X,Y,Z,radio,Color,textura,quitarColor) 
@@ -117,7 +116,7 @@ sky_sphere {
 }
 #end
 
-#macro plain(tgaPath, newTexture, newScale)
+#macro heightField(tgaPath, newTexture, newScale)
         height_field {
                 tga tgaPath
                 smooth
@@ -444,16 +443,18 @@ sphere {
                 photonContent()
         }
 #end
-
-#macro iluminar(obj,X,Y,Z,Color)  
+ 
+ 
+//TODO: check this macro 
+#macro illuminate(obj, lightSourcePosition, lightSourceColor)  
    light_source {                                                  
-     <X,Y,Z>                                                                               
-     color Color
+     lightSourcePosition                                                                              
+     color lightSourceColor
      looks_like { 
         object{
                 obj
                 finish{ambient 1} 
-                mover(X,Y,Z)
+                translate lightSourcePosition
         }
      }    
      //media_attenuation on 
@@ -462,19 +463,19 @@ sphere {
 
 
 
-#macro plano(altura, reflejoA, reflejoB, textura)
+#macro plain(plainHeight, reflectionA, reflectionB, plainTexture)
 	plane {
-		y, altura 
+		y, plainHeight 
 		hollow on
-		texture{textura finish{reflection {reflejoA,reflejoB}}}
-		#debug "Plano Terminado\n"
+		texture{plainTexture finish{reflection {reflectionA, reflectionB}}}
+		#debug "Plain Finished\n"
 	}
 #end
 
 //-----------------------------------------------
 
-#macro colorDeFondo(Color)
-   background {color Color} 
+#macro bgColor(value)
+   background {color value} 
 #end  
 
 #macro bola(X,Y,Z,radio,Reflejo)  

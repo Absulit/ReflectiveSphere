@@ -41,10 +41,11 @@
 	    dFx(obj,mx,my,mz,rx,ry,rz) 
 	    illuminate(obj, lightSourcePosition, lightSourceColor)   
 	    plain(plainHeight, reflectionA, reflectionB, plainTexture)  
-	    bgColor(value)
+	    bgColor(value)      
+	    bola(X,Y,Z,radio)
 	    --
 
-	bola(X,Y,Z,radio)
+
 	caja(X,Y,Z,XX,YY,ZZ,rx,ry,rz) 
 	luzVisible(X,Y,Z,radio,Color,textura,quitarColor) 
 	reflejo(valor)  
@@ -478,13 +479,13 @@ sphere {
    background {color value} 
 #end  
 
-#macro bola(X,Y,Z,radio,Reflejo)  
+#macro crystalBall(position, ratioVal, reflectionVal)  
    sphere{
-      <X,Y,Z>,radio
+      position, ratioVal
       texture{      
          T_Glass1 
          scale 1  
-         finish {reflection Reflejo ambient 0}//reflejo original 1 o 2  
+         finish {reflection reflectionVal ambient 0}//reflejo original 1 o 2  
       }
       // photon block for an object
 	  photons{
@@ -497,19 +498,17 @@ sphere {
    }
 #end
 
-#macro caja(X,Y,Z,XX,YY,ZZ,rx,ry,rz,Reflejo)
+#macro crystalBox(firstCornerPosition , secondCornerPosition, rotationVal, reflectionVal)
   box {
-    <X, Y, Z>  // Near lower left corner
-    < XX, YY, ZZ>   // Far upper right corner
+    firstCornerPosition  // Near lower left corner
+    secondCornerPosition   // Far upper right corner
     texture {
       T_Glass1     // Pre-defined from stones.inc
       scale 1       // Scale by the same amount in all directions 
-      finish {reflection Reflejo }//reflejo original 1 o 2 
+      finish {reflection reflectionVal }//reflejo original 1 o 2 
    }  
    //interior{caustics 2 ior 1.5}                             
-   rotate y*rx    
-   rotate z*ry  
-   rotate x*rz 
+   rotate rotationVal
    photons{
     target 1.0          // spacing multiplier for photons hitting the object
     refraction on
@@ -520,23 +519,23 @@ sphere {
   }                                  
 #end
 
-#macro luzVisible(X,Y,Z,radio,Color,textura,quitarColor)
+#macro visibleLightSource(position,ratioVal,colorVal,textureVal,removeColorBool)
    light_source {                                                  
-     <X,Y,Z>                                                                               
-     color Color
+     position                                                                              
+     color colorVal
      looks_like { 
          sphere { 
-            <X,Y,Z>                                                                              
-            radio 
+            position                                                                             
+            ratioVal 
             texture{
-                textura
-                pigment{Color+(White/4)}                           
+                textureVal
+                pigment{colorVal + (White / 4)}                           
                 finish{
                   reflection .5  
                   ambient 3
                 }
             }
-            #if(!quitarColor)
+            #if(removeColorBool)
             	pigment{Clear}    
             #end
             interior { ior 1.5 }
@@ -551,40 +550,41 @@ sphere {
    }
 #end
 
-#macro reflejo(luz,sombra)   
-   	finish{reflection{ luz, sombra  fresnel .5} conserve_energy} 
+#macro reflectionContent(lightVal, shadowVal)   
+   	finish{reflection{ lightVal, shadowVal  fresnel .5} conserve_energy} 
    	//finish{reflection{ .03, 1  fresnel .5} conserve_energy}
    	//interior{ior 1.5}   
-   	#debug "Reflejo Terminado\n"
+   	#debug "Reflection Finished\n"
 #end
     
-#macro caustico(valor) 
-	interior{caustics valor} 
+#macro causticInterior(value) 
+	interior{caustics value} 
 #end
 
-#macro sombraAtenuada()
-        interior{
-        	fade_distance 20
-            	fade_power 3
-        }
+// TODO constant?
+#macro attenuatedShadowInterior()
+    interior{
+    	fade_distance 20
+        	fade_power 3
+    }
 #end 
 
-#macro medio(Color)
-        media {    // atmospheric media sample
-          intervals 10
-          scattering { 1, Color }
-          samples 1, 10
-          confidence 0.9999
-          variance 1/1000
-          ratio 0.9
-        }      
+#macro medio(colorVal)
+    media {    // atmospheric media sample
+      intervals 10
+      scattering { 1, colorVal }
+      samples 1, 10
+      confidence 0.9999
+      variance 1/1000
+      ratio 0.9
+    }      
 	#debug "Medio Terminado\n"
 #end  
     
-#macro mar(inferior,superior,Color) 
-plane { y, inferior
+#macro seaObject(lowerHeight, topHeight, colorVal) 
+  plane { y, lowerHeight
     texture {
-      pigment { color Color }
+      pigment { color colorVal }
       finish { ambient 0.1 diffuse 0.7 }
       scale 0.01
     }
@@ -592,7 +592,7 @@ plane { y, inferior
 
   // y la superficie del agua
 
-  plane { y, superior
+  plane { y, topHeight
     texture {
       pigment { rgbf <0.6, 0.67, 0.72, 0.9> }
       normal {
@@ -602,14 +602,14 @@ plane { y, inferior
       }
       
     }  
-    reflejo(.5,.33)
-    caustico(32)
+    reflectionContent(.5, .33)
+    causticInterior(32)
   }     
   #debug "Mar Terminado\n"
 #end
 
-#macro mar2(altura)
-	plane { y, altura
+#macro seaObject2(heightVal)
+	plane { y, heightVal
 	   texture {
 	      T_Chrome_2D
 	      normal {
@@ -622,12 +622,13 @@ plane { y, inferior
 	   //finish{conserve_energy}   
 	}
 #end
-
-#macro neblina (Distancia,Color) 
+ 
+//neblina (Distancia,Color)  
+#macro mist (distanceVal , colorVal) 
 	fog {
 	  fog_type 1
-	  distance Distancia
-	  color Color
+	  distance distanceVal
+	  color colorVal
 	}
 	// atmospheric media can be generated by adding a media statement
 	// to the scene not attached to any specific object
@@ -641,7 +642,7 @@ plane { y, inferior
 	} 
 #end
 
-#macro niebla(base, altitud, distancia, Color)
+#macro fogObject(base, altitud, distancia, Color)
 	fog {
 	  fog_type 2
 	  fog_alt altitud

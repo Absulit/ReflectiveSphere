@@ -73,6 +73,13 @@
 	restar(A,B)
 */ 
 
+#macro radiositySky(colorVal)
+    sky_sphere {
+      pigment {colorVal}
+      scale 10000
+    }
+#end
+
 
 #macro darkSky()
 sky_sphere {
@@ -569,7 +576,7 @@ sphere {
     }
 #end 
 
-#macro medio(colorVal)
+#macro fogMediaInterior(colorVal)
     media {    // atmospheric media sample
       intervals 10
       scattering { 1, colorVal }
@@ -578,7 +585,7 @@ sphere {
       variance 1/1000
       ratio 0.9
     }      
-	#debug "Medio Terminado\n"
+	#debug "fogMediaInterior Finished\n"
 #end  
     
 #macro seaObject(lowerHeight, topHeight, colorVal) 

@@ -42,13 +42,15 @@
 
 
 */   
+            
+//Divine Proportion            
+#declare PHI = 1.1618;
 
-#declare dp = 1.1618;
-
-#declare reflejoSuave = 
+//reflejoSuave
+#declare softReflectionFinish = 
         finish{reflection{ .33 , 1}}
 
-#declare luz =
+#declare lightSource =
   light_source {
 	<-1.5, 1, -0.5>*10000
 	//color rgb <1.0, 0.92, 0.77>
@@ -60,7 +62,7 @@
 	}
   }
   
-#declare textura1 =
+#declare texture1 =
 texture {
   pigment {
     color rgb 0.8
@@ -72,7 +74,7 @@ texture {
   }
 }
 
-#declare textura2 =
+#declare texture2 =
 texture {
   pigment {
     color rgb <0.9, 0.65, 0.3>
@@ -83,12 +85,12 @@ texture {
   }
 }
 
-#declare texturaCafe =
+#declare brownTexture =
   texture {
     pigment { color rgb <1.0, 0.8, 0.6> } 
   }  
   
-#declare pigmentoCielo =
+#declare skyPigment =
    pigment {
      gradient y
      color_map {
@@ -97,8 +99,8 @@ texture {
      }
    } 
    
-   
-#declare pigmentoCieloAtardecer =
+// pigmentoCieloAtardecer   
+#declare skySunsetPigment =
    pigment {
      gradient y
      color_map {
@@ -109,7 +111,8 @@ texture {
      }
    } 
    
-#declare pigmentoCieloAnochecer =
+//pigmentoCieloAnochecer   
+#declare skyEveningPigment =
    pigment {
      gradient y
      color_map {
@@ -124,7 +127,7 @@ texture {
      
    
 //////////
-#declare Clouds1 = pigment {
+#declare clouds1 = pigment {
       bozo
       turbulence 1
       color_map {
@@ -133,7 +136,7 @@ texture {
         [1.0 color White filter 1]
       }
     }
-  #declare Clouds2 = pigment {
+  #declare clouds2 = pigment {
     agate
     turbulence 1
     color_map {
@@ -142,7 +145,7 @@ texture {
       [1.0 color White filter 1]
       }
     }
-  #declare Clouds3 = pigment {
+  #declare clouds3 = pigment {
     marble
     turbulence 1
     color_map {
@@ -161,7 +164,7 @@ texture {
     }
   }
 
-#declare LandArea = 
+#declare landAreaTexture = 
 	texture {
 		pigment {
 			agate
@@ -178,7 +181,7 @@ texture {
 		}
 	}
 	
-#declare OceanArea = 
+#declare oceanAreaTexture = 
 //texture{Water}
 	texture {
       pigment {
@@ -197,7 +200,7 @@ texture {
       //finish{reflection 1}
     }
 
-#declare CloudArea = texture {
+#declare cloudAreaTexture = texture {
     pigment {
       gradient y
       pigment_map {

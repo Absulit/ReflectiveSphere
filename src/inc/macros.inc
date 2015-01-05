@@ -77,6 +77,7 @@
     sky_sphere {
       pigment {colorVal}
       scale 10000
+      emission 1
     }
 #end
 
@@ -667,19 +668,18 @@ sphere {
 #end 
                     
                     
-                    
-#macro anguloAVector(Angulo) 
-	#local Angulo = -Angulo + 90;
-	#local Angulo = mod(Angulo, 360);
-	#local xFinal = cos(radians(Angulo));
-	#local yFinal = sin(radians(Angulo)); 
+// anguloAVector(Angulo)
+#macro angleToVector(value) 
+	#local value = -value + 90;
+	#local value = mod(value, 360);
+	#local xFinal = cos(radians(value));
+	#local yFinal = sin(radians(value)); 
 	<xFinal,yFinal,0>
-	
 #end  
 
-#macro angulosAVector(Angulos)
-	#local Z = -Angulos.z + 90;
-	#local Z = mod(Angulos.z, 360);
+#macro anglesToVector(values)
+	#local Z = -values.z + 90;
+	#local Z = mod(values.z, 360);
 	#local Z = radians(Z);
 	#local xFinal = cos(Z);
 	#local yFinal = sin(Z); 
@@ -687,19 +687,19 @@ sphere {
 	<xFinal,yFinal,zFinal>
 #end
                     
-#macro camara(Origen,Destino,Angulo,Zoom,Sky)
+#macro cam(origin, destiny, angleVal, zoomVal, skyAngle)
 	camera {	  		
-	  location  Origen
-	  look_at   Destino
+	  location  origin
+	  look_at   destiny
 	  right     x*image_width/image_height
-	  angle     Zoom
-	  sky       Sky	  
-	  rotate    Angulo 
+	  angle     zoomVal
+	  sky       skyAngle	  
+	  rotate    angleVal 
 	}  
 	#debug "Camara Terminada\n"
 #end  
 
-#macro cinema(Origen,Destino,Angulo,Zoom)
+#macro cinemaCam(Origen,Destino,Angulo,Zoom)
 	camera {	  		
 	  location  Origen
 	  look_at   Destino
@@ -711,7 +711,7 @@ sphere {
 	#debug "Camara cinema Terminada\n"
 #end   
 
-#macro camaraBlur(Origen,Destino,Angulo,Zoom)
+#macro blurCam(Origen,Destino,Angulo,Zoom)
 	camera {  
 	  perspective //keyword is facultative in this case
 	  location  Origen
@@ -730,18 +730,18 @@ sphere {
 
 
 
-#macro mover(X,Y,Z)
+#macro move(X,Y,Z)
 	translate<X,Y,Z>
 #end 
 
 
-
-#macro espejo()  
+// espejo()
+#macro mirrorFinish()  
 	finish { reflection {1.0} ambient 0 diffuse 0 }
 #end
 
-#macro atmosfera(distancia)
-	sphere{0,1 scale distancia hollow
+#macro atmosphereObj(distanceVal)
+	sphere{0,1 scale distanceVal hollow
 	       texture{pigment{Clear}finish{ambient 0 diffuse 0}}
 	       interior{
 	               media{
@@ -754,29 +754,30 @@ sphere {
 	}
 #end
 
-#macro cielo(PIGMENT_COLOR_MAP,textura)
+#macro skyObj(pigmentColorMap, textureVal)
 	sphere {                  // --- Sky ---
 	  <0, 0, 0>, 1
 	  texture {
-                PIGMENT_COLOR_MAP
-	        finish { diffuse 0 ambient 1 }
+            pigmentColorMap
+	        //finish { diffuse 0 ambient 1 }
 	  }
-	  texture{textura} 
-	  /*#if(iorAire)
+	  texture{textureVal} 
+	  //#if(iorAire)
 	        interior{
 	                ior Air_Ior
 	                dispersion 1.1
 	                dispersion_samples 10
 	        }
-	  #end*/
+	  //#end
 	  scale 10000
 	  hollow on
 	  no_shadow
 	}  
-	#debug "Cielo Terminado\n"
+	#debug "skyObj Finished\n"
 #end
 
-#macro aguaNormal()
+//aguaNormal()
+#macro waterNormal()
 	normal{
 	    bozo 1
 	    normal_map {
@@ -789,29 +790,30 @@ sphere {
 	}
 #end
 
-#macro juliaEsfera(X,Y,Z,radio,factor,textura,Reflejo)
+//juliaEsfera(X,Y,Z,radio,factor,textura,Reflejo)
+#macro juliaSphere(position, ratioVal, factorVal, textureVal, reflectionVal)
 	sphere{ 
-		translate <X,Y,Z>
-		radio
-		texture{textura}
+		position
+		ratioVal
+		texture{textureVal}
 		normal{ 
-		 julia <-.5,.5> factor
+		 julia <-.5,.5> factorVal
 		 exponent 4
 		 slope_map { [0 <0,0>][.5 <.5,1>][1 <1,0>] }
 		 rotate x*30
 		}
-		finish { specular .5 reflection Reflejo }
+		finish { specular .5 reflection reflectionVal }
 			  
 	}
 #end
  
-#macro juliaEsfera2(X,Y,Z,radio,factor,textura,Reflejo)
+#macro juliaSphere2(position, ratioVal, factorVal, textureVal, reflectionVal)
 sphere {
-  <X,Y,Z> // center of sphere <X Y Z>
-  radio       // radius of sphere  
-  texture{textura}
+  position    // center of sphere <X Y Z>
+  ratioVal       // radius of sphere  
+  texture{textureVal}
   pigment {
-      julia <0.353, 0.288>, factor
+      julia <0.353, 0.288>, factorVal
       interior 1, 1
       color_map { 
 	    [0 rgb 0]
@@ -821,17 +823,17 @@ sphere {
         [1 rgb 0]
       }
     }
-  reflejo(Reflejo)
+  reflectionContent(reflectionVal,.1)
 
 }
 
 #end
-#macro sol(X,Y,Z,radio,Color,textura,quitarColor,quitarAtmosfera)
-	luzVisible(X,Y,Z,radio,Color,textura,quitarColor)
-	#if(!quitarAtmosfera)
-		atmosfera(410)
+#macro sun(position,ratioVal,colorVal,textureVal,removeColorBool, removeAtmosphereBool)
+	visibleLightSource(position,ratioVal,colorVal,textureVal,removeColorBool)
+	#if(!removeAtmosphereBool)
+		atmosphereObj(410)
 	#end  
-	#debug "Sol Terminado.\nEs Genial!!!"
+	#debug "Sun Finished.\nEs Genial!!!"
 #end 
 
 
@@ -855,9 +857,10 @@ sphere {
   }
 #end       
 
-#macro restar(A,B)
-        difference{
-                object{A}
-                object{B}
-        }
+//restar(A,B)
+#macro diff(aObj, bObj)
+    difference{
+        object{aObj}
+        object{bObj}
+    }
 #end

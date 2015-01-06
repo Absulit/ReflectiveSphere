@@ -26,6 +26,6 @@
 #include "incs.inc"
 #include "macros.inc"  
 //#include "rays.inc"        
-#include "constantes.inc" 
-#include "animacion.inc" 
+#include "constants.inc" 
+#include "animation.inc" 
 

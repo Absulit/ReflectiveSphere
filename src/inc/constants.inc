@@ -154,7 +154,7 @@ texture {
       [1.0 color White filter 1]
     }
   }
-  #declare Clouds4 = pigment {
+  #declare clouds4 = pigment {
     granite
     turbulence 1
     color_map {
@@ -204,11 +204,11 @@ texture {
     pigment {
       gradient y
       pigment_map {
-        [0.00 Clouds1]
-        [0.25 Clouds2]
-        [0.50 Clouds3]
-        [0.75 Clouds4]
-        [1.00 Clouds1]
+        [0.00 clouds1]
+        [0.25 clouds2]
+        [0.50 clouds3]
+        [0.75 clouds4]
+        [1.00 clouds1]
       }
     }
   }   

@@ -22,64 +22,66 @@
     SOFTWARE.
 */
 
-//Animacion
+//Animation
 //-ga +kfi1 +kff30 +kc -p 
+
 /*
- -GA	Evita salida a la consola para aumentar velocidad
- -A0.1  Anti Alias false con 0.1
- +R2 Tipo de AA
- +KFI1 Cuadro de inicio(no cambiar) 
- +KFF30 Cuadro final, cambiar por animacion  
+ -GA	Remove output from console for speed
+ -A0.1  Anti Alias false with 0.1
+ +R2    AA type
+ +KFI1  Key Frame Initial (do not change) 
+ +KFF30 Key Frame Final, change per animation
 
  ************no tocar***normalizado****
  *+KI0 valor inicial de clock  en 0   *
  *+KF1 valor final de clock en 1      *
  **************************************
- +KC Activar animacion ciclica 
+ +KC Activate cyclic animation 
  **************************************
- segmento de animacion
- +sf10  inicio de segmento
- +ef20  fin de segmento 
  
- -gs -gw solo se imprime lo que yo mando a escribir
+ Animation Segment
+ +sf10  Segment start Frame
+ +ef20  Segment end Frame
+ 
+ -gs -gw only outputs what I wrote
  	
 		animArray(miArray)    
 		animLapso(valInicial, valFinal, frameInicial, frameFinal)
-        	anim(valInicial, valFinal) 
-        	animVector(vI,vF)    
+        anim(valInicial, valFinal) 
+        animVector(vI,vF)    
 */
 
-#macro animRotar(valInicial, iteraciones, incremento)
-	#if(clock_on)
-		#local lapso = final_clock / iteraciones;//puede ser q el valor final de clock cambie
-		#local tiempoActual = clock;
-		//el clock entre lapsos debe ser igual
-		#while(tiempoActual >= lapso)
-			dec(tiempoActual,lapso)
+#macro rotateAnim(initVal, iterations, increment)
+    #if(clock_on)
+		#local lapse = final_clock / iterations;////the final clock value might change
+		#local currentClock = clock;
+		//clock betwen laps should be equal
+		#while(currentClock >= lapse)
+			dec(currentClock, lapse)
 		#end
-		#local return = valInicial * iteraciones * tiempoActual;
-		#if(incremento)
+		#local return = initVal * iterations * currentClock;
+		#if(increment)
 			#local return = return * clock;
 		#end
 		return
 	#else
-		valInicial
+		initVal
 	#end
 #end 
 
-//animArray(array[10]{ 1.1, 2 ,2, 2, 3, 3.5, 3.5, 10, 10, 12})
-#macro animArray(miArray)
+//arrayAnim(array[10]{ 1.1, 2 ,2, 2, 3, 3.5, 3.5, 10, 10, 12})
+#macro arrayAnim(arrayVal)
    	//miArray es una lista de numeros por los q a travez del tiempo se desplazara	  
    
-	#local tam = dimension_size(miArray,1);
+	#local tam = dimension_size(arrayVal,1);
 	#local taml = tam - 1;
 	#if(clock_on)	   
 		#local lapso = final_clock / taml;//puede ser q el valor final de clock cambie
 		#local actual = int(taml * clock);
 		#local siguiente = actual + 1;
 		
-		#local valInicial = miArray[actual]; 
-		#local valFinal = miArray[siguiente];
+		#local valInicial = arrayVal[actual]; 
+		#local valFinal = arrayVal[siguiente];
 		#local distancia = valFinal - valInicial;
 		
 		#local clockInicial = lapso * actual;
@@ -98,41 +100,40 @@
 	#else 
 		#local return = miArray[int(taml * clock)];
 	#end
-	return   			
+	return
 #end
 
-#macro animLapso(valInicial, valFinal, clockInicial, clockFinal)
-        #if(clockInicial >= clockFinal)
-                #error "clockFinal debe ser mayor a clockInicial"
-        #end   
-        #local return = 0;
-        #if(clock >= clockInicial)    
-                #if(clock <= clockFinal)
-                        /*valInicial + frame_number - frameInicial * (valFinal - valInicial)/(frameFinal - frameInicial)
-                        valInicial + frame_number - frameInicial *                 dv/df 
-                        valInicial +    transcurrido        *                        r                                */   
-                        #local return = valInicial + (clock - clockInicial) * ((valFinal - valInicial) / (clockFinal - clockInicial));
-                                 
-                #else  
-                        #local return = valFinal;       
-                #end
-        #else
-                #local return = valInicial;
-        #end 
-        return
+#macro lapseAnim(initValue, endValue, initClick, endClock)
+    #if(initClick >= endClock)
+        #error "endClock must be greater than initClick"
+    #end   
+    #local return = 0;
+    #if(clock >= initClick)    
+        #if(clock <= endClock)
+            /*valInicial + frame_number - frameInicial * (valFinal - valInicial)/(frameFinal - frameInicial)
+            valInicial + frame_number - frameInicial *                 dv/df 
+            valInicial +    transcurrido        *                        r                                */   
+            #local return = initValue + (clock - initClick) * ((endValue - initValue) / (endClock - initClick));                       
+        #else  
+            #local return = endValue;       
+        #end
+    #else
+        #local return = initValue;
+    #end 
+    return
 #end 
 
-#macro anim(valInicial, valFinal)
-        #if(valInicial = valFinal)
-                #error "Seas boli! para q anim con dos valores iguales!"
-        #end 
-	#local distancia = valFinal - valInicial;
-	#local tiempo = final_clock - initial_clock;
-	#local velocidad = distancia / tiempo;
-        valInicial + (velocidad * clock)       
-        //valInicial + (((valFinal - valInicial) / (final_frame - initial_frame + 1)) * frame_number)
+#macro anim(initValue, endValue)
+    #if(initValue = endValue)
+        #error "Silly! why an animation with two equal values!"
+    #end 
+	#local distanceVal  = endValue - initValue;
+	#local time         = final_clock - initial_clock;
+	#local speed        = distanceVal / time;
+    initValue + (speed * clock)       
+    //initValue + (((valFinal - initValue) / (final_frame - initial_frame + 1)) * frame_number)
 #end    
 
-#macro animVector(vI,vF)         
-        <anim(vI.x,vF.x), anim(vI.y,vF.y), anim(vI.z,vF.z)>
+#macro vectorAnim(initVector,finalVector)         
+        <anim(initVector.x, finalVector.x), anim(initVector.y, finalVector.y), anim(initVector.z, finalVector.z)>
 #end
